@@ -3,8 +3,7 @@ import { useState } from 'react';
 import api from '../api/api';
 
 const InstitutionModal = ({ isOpen, onClose, onSuccess }) => {
-  // Form state for a new institution
-  const [formData, setFormData] = useState({
+  const initialState = {
     type: 'college',
     district: '',
     nagar: 0,
@@ -18,27 +17,48 @@ const InstitutionModal = ({ isOpen, onClose, onSuccess }) => {
     tution: 0,
     karyakartaSchool: 0,
     receivedAmount: 0,
-  });
+  };
+
+  const [formData, setFormData] = useState(initialState);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // --- FIX START ---
+  // This new handler correctly manages empty strings for number inputs
   const handleChange = (e) => {
     const { name, value, type } = e.target;
-    // Handle number inputs
+
     setFormData((prev) => ({
       ...prev,
-      [name]: type === 'number' ? Number(value) : value,
+      // For number fields, allow the value to be an empty string for typing,
+      // otherwise convert it to a number. Number() handles leading zeros.
+      [name]: type === 'number' ? (value === '' ? '' : Number(value)) : value,
     }));
   };
+  // --- FIX END ---
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+
+    // --- FIX START ---
+    // Create a clean version of the data to send to the backend.
+    // This ensures any empty strings for number fields are converted to 0.
+    const dataToSend = { ...formData };
+    Object.keys(dataToSend).forEach(key => {
+        if (typeof dataToSend[key] === 'string' && dataToSend[key] === '' && key !== 'district' && key !== 'type') {
+            dataToSend[key] = 0;
+        }
+    });
+    // --- FIX END ---
+
     try {
-      await api.post('/institutions', formData);
-      onSuccess(); // Tell the dashboard to refresh its data
-      onClose(); // Close the modal
+      await api.post('/institutions', dataToSend); // Send the cleaned data
+      onSuccess();
+      setFormData(initialState); // Reset form after success
+      onClose();
     } catch (err) {
       setError('Failed to add institution. Please check the fields.');
       console.error(err);
@@ -51,7 +71,7 @@ const InstitutionModal = ({ isOpen, onClose, onSuccess }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-      <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-2xl">
+      <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <h2 className="text-2xl font-bold mb-4">Add New Institution</h2>
         <form onSubmit={handleSubmit}>
           {error && <p className="text-red-500 bg-red-100 p-2 rounded mb-4">{error}</p>}
@@ -127,15 +147,15 @@ const InstitutionModal = ({ isOpen, onClose, onSuccess }) => {
           )}
 
           {/* Amount */}
-           <div>
+           <div className="mb-4">
               <label className="block text-sm font-medium">Received Amount</label>
               <input type="number" name="receivedAmount" value={formData.receivedAmount} onChange={handleChange} className="mt-1 block w-full p-2 border rounded-md" />
             </div>
 
           {/* Action Buttons */}
           <div className="flex justify-end gap-4 mt-6">
-            <button type="button" onClick={onClose} className="py-2 px-4 bg-gray-200 rounded-md">Cancel</button>
-            <button type="submit" disabled={loading} className="py-2 px-4 bg-orange-600 text-white rounded-md disabled:bg-orange-300">
+            <button type="button" onClick={onClose} className="py-2 px-4 bg-gray-200 rounded-md hover:bg-gray-300">Cancel</button>
+            <button type="submit" disabled={loading} className="py-2 px-4 bg-orange-600 text-white rounded-md disabled:bg-orange-300 hover:bg-orange-700">
               {loading ? 'Saving...' : 'Save Institution'}
             </button>
           </div>
