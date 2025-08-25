@@ -8,7 +8,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Check if user is already logged in on app load
+  // On initial app load, check localStorage for existing user info
   useEffect(() => {
     const storedUser = localStorage.getItem('userInfo');
     if (storedUser) {

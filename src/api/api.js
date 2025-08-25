@@ -2,13 +2,19 @@
 import axios from 'axios';
 
 const api = axios.create({
-  // Make sure this matches your backend's address and port
   baseURL: 'http://localhost:5000/api',
 });
 
-// We will use this interceptor later for admin requests
+// This interceptor runs before every request
 api.interceptors.request.use((config) => {
-  // Logic to add auth token will go here
+  // Get user info from localStorage
+  const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+
+  // If a user and token exist, add the Authorization header
+  if (userInfo && userInfo.token) {
+    config.headers.Authorization = `Bearer ${userInfo.token}`;
+  }
+
   return config;
 });
 

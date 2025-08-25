@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import useAuth from '../hooks/useAuth';
 
 const LoginPage = () => {
-  const [username, setUsername] = useState('admin'); // Default to admin for convenience
+  const [username, setUsername] = useState('admin');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -18,7 +18,7 @@ const LoginPage = () => {
     setError('');
     try {
       await login(username, password);
-      navigate('/admin'); // Redirect to admin dashboard on success
+      navigate('/admin');
     } catch (err) {
       setError('Invalid username or password.');
       console.error(err);
