@@ -1,16 +1,30 @@
 // src/pages/LoginPage.js
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import useAuth from '../hooks/useAuth';
 
 const LoginPage = () => {
-  const [username, setUsername] = useState('');
+  const [username, setUsername] = useState('admin'); // Default to admin for convenience
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const { login } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // For now, we'll just log the credentials.
-    // We will add the API call in the next step.
-    console.log({ username, password });
+    setLoading(true);
+    setError('');
+    try {
+      await login(username, password);
+      navigate('/admin'); // Redirect to admin dashboard on success
+    } catch (err) {
+      setError('Invalid username or password.');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -20,6 +34,7 @@ const LoginPage = () => {
           <h1 className="text-center text-2xl font-bold text-gray-700 mb-6">
             Admin Login
           </h1>
+          {error && <p className="bg-red-100 text-red-700 p-3 rounded mb-4 text-center">{error}</p>}
           <form onSubmit={handleSubmit}>
             <div className="mb-4">
               <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="username">
@@ -51,10 +66,11 @@ const LoginPage = () => {
             </div>
             <div className="flex items-center justify-between">
               <button
-                className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:shadow-outline w-full"
+                className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:shadow-outline w-full disabled:bg-orange-300"
                 type="submit"
+                disabled={loading}
               >
-                Login
+                {loading ? 'Logging in...' : 'Login'}
               </button>
             </div>
           </form>
