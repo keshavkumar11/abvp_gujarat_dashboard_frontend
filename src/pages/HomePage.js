@@ -1,24 +1,22 @@
 // src/pages/HomePage.js
 import { useState, useEffect } from 'react';
-import api from '../api/api'; // Import our configured axios instance
+import { Link } from 'react-router-dom'; // 1. Import Link
+import api from '../api/api';
 
 const HomePage = () => {
-  // State to hold our data
+  // ... (all the existing state and useEffect code stays the same)
   const [gujaratSummary, setGujaratSummary] = useState(null);
   const [districtData, setDistrictData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // useEffect runs when the component mounts
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch both endpoints at the same time for efficiency
         const [gujaratRes, districtRes] = await Promise.all([
           api.get('/institutions/gujarat-summary'),
           api.get('/institutions/summary')
         ]);
-
         setGujaratSummary(gujaratRes.data);
         setDistrictData(districtRes.data);
         setError(null);
@@ -29,16 +27,12 @@ const HomePage = () => {
         setLoading(false);
       }
     };
-
     fetchData();
-  }, []); // The empty array [] means this effect runs only once
+  }, []);
 
-  // Display a loading message
   if (loading) {
     return <p className="text-center text-xl">Loading data...</p>;
   }
-
-  // Display an error message
   if (error) {
     return <p className="text-center text-xl text-red-500">{error}</p>;
   }
@@ -49,7 +43,7 @@ const HomePage = () => {
         Membership Dashboard
       </h1>
 
-      {/* Summary Cards - Now using live data */}
+      {/* Summary Cards section is unchanged */}
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
          <div className="bg-white p-4 rounded-lg shadow text-center">
           <h3 className="text-lg font-semibold text-gray-600">Total Members</h3>
@@ -73,7 +67,7 @@ const HomePage = () => {
         </div>
       </div>
 
-      {/* District Table - Now using live data */}
+      {/* District Table section is updated */}
       <div className="bg-white p-6 rounded-lg shadow">
         <h2 className="text-2xl font-bold text-gray-700 mb-4">District-wise Summary</h2>
         <div className="overflow-x-auto">
@@ -89,7 +83,12 @@ const HomePage = () => {
             <tbody className="divide-y divide-gray-200">
               {districtData.map((item) => (
                 <tr key={item.district} className="hover:bg-gray-50">
-                  <td className="py-3 px-4 font-medium text-gray-800">{item.district}</td>
+                  {/* --- 2. UPDATE THIS CELL --- */}
+                  <td className="py-3 px-4 font-medium text-gray-800">
+                    <Link to={`/district/${item.district}`} className="text-orange-600 hover:underline">
+                      {item.district}
+                    </Link>
+                  </td>
                   <td className="py-3 px-4 text-gray-600">{(item.totalMembers || 0).toLocaleString()}</td>
                   <td className="py-3 px-4 text-gray-600">{item.colleges || 0}</td>
                   <td className="py-3 px-4 text-gray-600">{item.schools || 0}</td>
