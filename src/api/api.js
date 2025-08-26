@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:5000/api',
+  baseURL: 'https://abvp-gujarat-dashboard-backend.onrender.com/api',
 });
 
 // This interceptor runs before every request
