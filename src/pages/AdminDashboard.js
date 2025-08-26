@@ -1,4 +1,3 @@
-// src/pages/AdminDashboard.js
 import { useState, useEffect, useCallback } from 'react';
 import api from '../api/api';
 import InstitutionModal from '../components/InstitutionModal';
@@ -8,8 +7,6 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
-  // --- NEW: State to hold the institution being edited ---
   const [editingInstitution, setEditingInstitution] = useState(null);
 
   const fetchInstitutions = useCallback(async () => {
@@ -42,20 +39,19 @@ const AdminDashboard = () => {
     }
   };
 
-  // --- NEW: Handlers for opening the modal in add or edit mode ---
   const handleOpenAddModal = () => {
-    setEditingInstitution(null); // Ensure we are in "add" mode
+    setEditingInstitution(null);
     setIsModalOpen(true);
   };
 
   const handleOpenEditModal = (institution) => {
-    setEditingInstitution(institution); // Set the institution to edit
+    setEditingInstitution(institution);
     setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-    setEditingInstitution(null); // Clear editing state when modal closes
+    setEditingInstitution(null);
   };
   
   const handleSuccess = () => {
@@ -69,7 +65,6 @@ const AdminDashboard = () => {
     <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-800">Admin Dashboard</h1>
-        {/* --- UPDATED: Button now uses its own handler --- */}
         <button 
           onClick={handleOpenAddModal}
           className="bg-orange-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-orange-700"
@@ -83,11 +78,19 @@ const AdminDashboard = () => {
       <div className="bg-white p-6 rounded-lg shadow">
         <h2 className="text-2xl font-bold text-gray-700 mb-4">All Institutions</h2>
         <div className="overflow-x-auto">
-          <table className="min-w-full bg-white">
+          <table className="min-w-full bg-white text-sm">
             <thead className="bg-gray-200">
               <tr>
                 <th className="py-3 px-4 text-left">District</th>
                 <th className="py-3 px-4 text-left">Type</th>
+                <th className="py-3 px-4 text-left">Nagar</th>
+                <th className="py-3 px-4 text-left">Male</th>
+                <th className="py-3 px-4 text-left">Female</th>
+                <th className="py-3 px-4 text-left">Professors/Teachers</th>
+                <th className="py-3 px-4 text-left">Colleges / Schools</th>
+                <th className="py-3 px-4 text-left">Uni/Hostel/PG / Tuition</th>
+                <th className="py-3 px-4 text-left">Karyakarta</th>
+                <th className="py-3 px-4 text-left">Star</th>
                 <th className="py-3 px-4 text-left">Total Members</th>
                 <th className="py-3 px-4 text-left">Actions</th>
               </tr>
@@ -97,9 +100,17 @@ const AdminDashboard = () => {
                 <tr key={inst._id} className="hover:bg-gray-50">
                   <td className="py-3 px-4">{inst.district}</td>
                   <td className="py-3 px-4 capitalize">{inst.type}</td>
-                  <td className="py-3 px-4">{inst.totalMembership}</td>
-                  <td className="py-3 px-4">
-                    {/* --- UPDATED: Edit button now works --- */}
+                  <td className="py-3 px-4">{inst.nagar}</td>
+                  <td className="py-3 px-4">{inst.male.toLocaleString()}</td>
+                  <td className="py-3 px-4">{inst.female.toLocaleString()}</td>
+                  <td className="py-3 px-4">{inst.professor.toLocaleString()}</td>
+                  {/* Conditionally render college or school data */}
+                  <td className="py-3 px-4">{inst.type === 'college' ? inst.colleges : inst.schools}</td>
+                  <td className="py-3 px-4">{inst.type === 'college' ? inst.uniHostelPg : inst.tution}</td>
+                  <td className="py-3 px-4">{inst.type === 'college' ? inst.karyakarta : inst.karyakartaSchool}</td>
+                  <td className="py-3 px-4">{inst.star || 'N/A'}</td>
+                  <td className="py-3 px-4 font-semibold">{inst.totalMembership.toLocaleString()}</td>
+                  <td className="py-3 px-4 whitespace-nowrap">
                     <button 
                       onClick={() => handleOpenEditModal(inst)}
                       className="text-blue-600 hover:underline mr-4"
@@ -116,7 +127,7 @@ const AdminDashboard = () => {
                 </tr>
               )) : (
                 <tr>
-                  <td colSpan="4" className="text-center py-4">No institutions found. Add one to get started!</td>
+                  <td colSpan="12" className="text-center py-4">No institutions found. Add one to get started!</td>
                 </tr>
               )}
             </tbody>
@@ -124,7 +135,6 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      {/* --- UPDATED: Modal is now passed the institution to edit --- */}
       <InstitutionModal 
         isOpen={isModalOpen}
         onClose={handleCloseModal}
