@@ -1,10 +1,9 @@
-// src/pages/DistrictDetailPage.js
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../api/api';
 
 const DistrictDetailPage = () => {
-  const { districtName } = useParams(); // Get district name from URL
+  const { districtName } = useParams();
   const [institutions, setInstitutions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -13,7 +12,6 @@ const DistrictDetailPage = () => {
     const fetchDistrictData = async () => {
       try {
         const { data } = await api.get('/institutions');
-        // Filter the full list to get data for this specific district
         const districtData = data.filter(inst => inst.district === districtName);
         setInstitutions(districtData);
       } catch (err) {
@@ -25,14 +23,18 @@ const DistrictDetailPage = () => {
     };
 
     fetchDistrictData();
-  }, [districtName]); // Re-fetch if the districtName changes
+  }, [districtName]);
 
   if (loading) return <p className="text-center">Loading district details...</p>;
   if (error) return <p className="text-center text-red-500">{error}</p>;
   
-  // Separate institutions into colleges and schools
   const colleges = institutions.filter(inst => inst.type === 'college');
   const schools = institutions.filter(inst => inst.type === 'school');
+
+  // --- NEW: Calculate financial totals for the entire district ---
+  const totalReceived = institutions.reduce((sum, inst) => sum + (inst.receivedAmount || 0), 0);
+  const totalLeft = institutions.reduce((sum, inst) => sum + (inst.leftAmount || 0), 0);
+  const totalAmount = totalReceived + totalLeft;
 
   return (
     <div>
@@ -40,6 +42,25 @@ const DistrictDetailPage = () => {
       <h1 className="text-3xl font-bold text-gray-800 mb-6">
         District: <span className="text-orange-600">{districtName}</span>
       </h1>
+
+      {/* --- NEW: Financial Summary Section --- */}
+      <div className="bg-white p-6 rounded-lg shadow mb-8">
+        <h2 className="text-2xl font-bold text-gray-700 mb-4">Financial Summary</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-green-50 p-4 rounded-lg text-center">
+            <h3 className="text-lg font-semibold text-green-800">Received Amount</h3>
+            <p className="text-3xl font-bold text-green-700">{totalReceived.toLocaleString()}</p>
+          </div>
+          <div className="bg-red-50 p-4 rounded-lg text-center">
+            <h3 className="text-lg font-semibold text-red-800">Left Amount</h3>
+            <p className="text-3xl font-bold text-red-700">{totalLeft.toLocaleString()}</p>
+          </div>
+          <div className="bg-gray-100 p-4 rounded-lg text-center">
+            <h3 className="text-lg font-semibold text-gray-800">Total Amount</h3>
+            <p className="text-3xl font-bold text-gray-900">{totalAmount.toLocaleString()}</p>
+          </div>
+        </div>
+      </div>
 
       {/* Colleges Table */}
       <div className="bg-white p-6 rounded-lg shadow mb-8">
